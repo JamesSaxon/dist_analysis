@@ -54,8 +54,8 @@ def map_seats(name, paths, tract_votes, years, final_table):
     return outcomes[outcols]
 
 
-def cdmap_seats(name, fips, epsg, sessn, tract_votes, years, final_table):
-    
+def cdmap_seats(name, sessn, epsg, fips, tract_votes, years, final_table = None):
+
     trcd_df = gpd.GeoDataFrame.from_postgis("""SELECT rn.rn, cd, 
                                                       ST_Centroid(ST_Transform(tr.geom, states.epsg)) geometry
                                                FROM census_tracts_2015 as tr
@@ -84,7 +84,7 @@ def cdmap_seats(name, fips, epsg, sessn, tract_votes, years, final_table):
         cd_seats["%s D Fr" % y] = cd_seats["D" + var] / (cd_seats["D" + var] + cd_seats["R" + var])
         cd_seats[str(y)] = cd_seats["D" + var] > cd_seats["R" + var]
     
-    final_table.loc[name] = cd_seats.mean()
+    if final_table: final_table.loc[name] = cd_seats.mean()
 
     outcols = ["map_id"]
     for y in years: outcols += [str(y), "%s D Fr" % y]
@@ -129,9 +129,9 @@ def seat_table(usps, years):
         # print(ti, sorted(glob.glob(stdir.format(usps, m))))
         seat_res[m] = map_seats(ti, glob.glob(stdir.format(usps, m)), votes, years, final_table)
 
-    seat_res["107"] = cdmap_seats("107th Congress", fips, epsg, 107, votes, years, final_table)
-    seat_res["111"] = cdmap_seats("111th Congress", fips, epsg, 111, votes, years, final_table)
-    seat_res["114"] = cdmap_seats("114th Congress", fips, epsg, 114, votes, years, final_table)
+    seat_res["107"] = cdmap_seats("107th Congress", 107, epsg, fips, votes, years, final_table)
+    seat_res["111"] = cdmap_seats("111th Congress", 111, epsg, fips, votes, years, final_table)
+    seat_res["114"] = cdmap_seats("114th Congress", 114, epsg, fips, votes, years, final_table)
 
     final_table.columns = pd.MultiIndex.from_tuples([(usps.upper(), yr) for yr in years])
 
