@@ -1,4 +1,4 @@
-# 
+#   
 # Smallest enclosing circle - Library (Python)
 # 
 # Copyright (c) 2017 Project Nayuki
