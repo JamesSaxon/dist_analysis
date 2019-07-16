@@ -108,7 +108,8 @@ for fi, f in enumerate(files):
         plan_dict["dseats"], plan_dict["rseats"] = party_seats(gdf, seats)
     else:
         plan_dict["eg"] = -1
-        plan_dict["dseats"], plan_dict["rseats"] = -1, -1
+        plan_dict["dseats"] = -1
+        plan_dict["rseats"] = -1
 
     plan_dict["bseats"], plan_dict["hseats"] = minority_seats(gdf, seats)
     
