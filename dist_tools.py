@@ -38,6 +38,8 @@ from scc import *  ## Nayuki minimum bounding circle, instead of miniball.
 import re
 import time
 
+import warnings
+
 
 us_states = ["al", "ak", "az", "ar", "ca", "co", "ct", "de", "dc", "fl", 
              "ga", "hi", "id", "il", "in", "ia", "ks", "ky", "la", "me", 
@@ -50,44 +52,38 @@ def jf_jw_match(x, list_strings):
     return sorted(list_strings, key=lambda y: jf.jaro_winkler(x, y), reverse=True)
 
 
-def get_tr_rn(usps, epsg):
+def get_tr_rn(usps):
 
     query = """SELECT 
-                  rn, ST_Transform(tr.geom, epsg) geometry
+                  rn, tr.geom geometry
                FROM census_tracts_2015 AS tr
                JOIN (SELECT state, county, tract,
-                            row_number() over 
+                            row_number() OVER 
                               (PARTITION BY state ORDER BY county, tract NULLS LAST) - 1 as rn
-                     FROM census_tracts_2015) rn ON
-                       tr.state  = rn.state  AND
-                       tr.county = rn.county AND
-                       tr.tract  = rn.tract
+                     FROM census_tracts_2015) rn
+               USING (state, county, tract)
                JOIN states AS st ON st.fips = tr.state
-               WHERE st.usps = '{}' ORDER BY rn;
+               WHERE st.usps = UPPER('{}') ORDER BY rn;
                """
     
     con = psycopg2.connect(database = "census", user = user, password = passwd,
                            host = "saxon.harris.uchicago.edu", port = 5432)
     
-    tr_rn = gpd.GeoDataFrame.from_postgis(query.format(usps), con, 
-                                          geom_col = "geometry", crs = from_epsg(epsg))
+    tr_rn = gpd.GeoDataFrame.from_postgis(query.format(usps), con, geom_col = "geometry", crs = from_epsg(2163))
 
     return tr_rn
 
 
-def get_bg_rn(usps, epsg):
+def get_bg_rn(usps):
 
     query = """SELECT 
-                  rn, ST_Transform(bg.geom, epsg) geometry
+                  rn, bg.geom geometry
                FROM census_bg_2010 AS bg
                JOIN (SELECT state, county, tract, bgroup,
-                            row_number() over 
+                            row_number() OVER
                               (PARTITION BY state ORDER BY county, tract, bgroup NULLS LAST) - 1 as rn
-                     FROM census_bg_2010) rn ON
-                       bg.state  = rn.state  AND
-                       bg.county = rn.county AND
-                       bg.tract  = rn.tract AND 
-                       bg.bgroup = rn.bgroup
+                     FROM census_bg_2010) rn
+               USING (state, county, tract, bgroup)
                JOIN states AS st ON st.fips = bg.state
                WHERE st.usps = UPPER('{}') ORDER BY rn;
                """
@@ -95,8 +91,7 @@ def get_bg_rn(usps, epsg):
     con = psycopg2.connect(database = "census", user = user, password = passwd,
                            host = "saxon.harris.uchicago.edu", port = 5432)
     
-    bg_rn = gpd.GeoDataFrame.from_postgis(query.format(usps), con, 
-                                          geom_col = "geometry", crs = from_epsg(epsg))
+    bg_rn = gpd.GeoDataFrame.from_postgis(query.format(usps), con, geom_col = "geometry", crs = from_epsg(2163))
 
     return bg_rn
 
@@ -116,6 +111,25 @@ def merge_tract_number(rndf, vdf, var = "rn"):
     agg_votes = votes.groupby(var).sum().filter(regex = '[RD][901][02468]').astype(float)
 
     return rndf.set_index("rn", drop = True)[[]].join(agg_votes, how = "left").fillna(0)
+
+
+
+def map_sanity_check(usps, year, epsg = 4326):
+
+    tr_rn = get_tr_rn(usps).to_crs(epsg = epsg)
+
+    votes_merged = pd.read_csv("votes/{}.csv".format(usps.lower()), index_col = "rn")
+    
+    votes_merged["DRVotes"] = votes_merged.filter(regex = "{:02d}".format(year % 100), axis = 1).sum(axis = 1)
+    votes_merged["DFrac"]   = votes_merged["D{:02d}".format(year % 100)] / votes_merged["DRVotes"]
+                               
+    votes_merged = tr_rn.join(votes_merged)
+    votes_merged = votes_merged[votes_merged.filter(regex = "{:02d}".format(year % 100), axis = 1).sum(axis = 1) > 0]
+
+    ax = votes_merged[votes_merged.DRVotes > 0].plot(column = "DFrac", vmin = 0, vmax = 1,
+                                                     cmap = "RdBu", alpha = 1, figsize = (3, 3))
+    
+    ax.set_axis_off()
 
 
 def map_seats(name, paths, tract_votes, years, final_table):
@@ -196,50 +210,50 @@ def cdmap_seats(sessn, usps, votes = None):
 
 
 
-def seat_table(usps, years):
-
-    votes = pd.read_csv(usps + "_votes.csv", index_col = "rn")
-
-    st = pd.read_sql("select seats, epsg, lower(usps) usps, fips from states where usps = upper('{}');".format(usps),
-                     con = psycopg2.connect(database = "census", user = user, password = passwd,
-                                            host = "saxon.harris.uchicago.edu", port = 5432)).ix[0].to_dict()
-    
-    epsg, fips = st["epsg"], st["fips"]
-    
-    final_table = pd.DataFrame(columns = [str(y) for y in years],
-                               index   = ["Statewide Votes", "107th Congress", "111th Congress", "114th Congress",
-                                          "Power Diagram", "Split-Line", "Isoperimeter Quotient", "Rohrbach", 
-                                          "Exchange", "Population Hull", "Dynamic Radius", "Inscribed Circles",
-                                          "Circumscribing Circles", "Path Fraction"])
-
-    final_table.columns.name = usps.upper()
-    
-    final_table.loc["Statewide Votes"] = {str(y) :  votes["D{:02d}".format(y % 100)].sum() / \
-                                                   (votes["D{:02d}".format(y % 100)].sum() + \
-                                                    votes["R{:02d}".format(y % 100)].sum())
-                                          for y in years}
-    
-    stdir = "../chalk/s3/res/{}/{}/s2[78][0-9]/*/*.csv"
-
-    metrics = {"Dynamic Radius"        : "dyn_radius",  "Inscribed Circles"      : "ehrenburg",
-               "Exchange"              : "exchange",    "Population Hull"        : "hull_p",
-               "Isoperimeter Quotient" : "polsby",      "Circumscribing Circles" : "reock", 
-               "Rohrbach"              : "rohrbach",    "Power Diagram"          : "power",
-               "Split-Line"            : "split"}
-
-
-    seat_res = {}
-    for ti, m in metrics.items():
-        # print(ti, sorted(glob.glob(stdir.format(usps, m))))
-        seat_res[m] = map_seats(ti, glob.glob(stdir.format(usps, m)), votes, years, final_table)
-
-    seat_res["107"] = cdmap_seats("107th Congress", 107, epsg, fips, votes, years, final_table)
-    seat_res["111"] = cdmap_seats("111th Congress", 111, epsg, fips, votes, years, final_table)
-    seat_res["114"] = cdmap_seats("114th Congress", 114, epsg, fips, votes, years, final_table)
-
-    final_table.columns = pd.MultiIndex.from_tuples([(usps.upper(), yr) for yr in years])
-
-    return seat_res, final_table
+##  def seat_table(usps, years):
+##  
+##      votes = pd.read_csv("voting/votes/{}.csv".format(usps), index_col = "rn")
+##  
+##      st = pd.read_sql("select seats, epsg, lower(usps) usps, fips from states where usps = upper('{}');".format(usps),
+##                       con = psycopg2.connect(database = "census", user = user, password = passwd,
+##                                              host = "saxon.harris.uchicago.edu", port = 5432)).ix[0].to_dict()
+##      
+##      epsg, fips = st["epsg"], st["fips"]
+##      
+##      final_table = pd.DataFrame(columns = [str(y) for y in years],
+##                                 index   = ["Statewide Votes", "107th Congress", "111th Congress", "114th Congress",
+##                                            "Power Diagram", "Split-Line", "Isoperimeter Quotient", "Rohrbach", 
+##                                            "Exchange", "Population Hull", "Dynamic Radius", "Inscribed Circles",
+##                                            "Circumscribing Circles", "Path Fraction"])
+##  
+##      final_table.columns.name = usps.upper()
+##      
+##      final_table.loc["Statewide Votes"] = {str(y) :  votes["D{:02d}".format(y % 100)].sum() / \
+##                                                     (votes["D{:02d}".format(y % 100)].sum() + \
+##                                                      votes["R{:02d}".format(y % 100)].sum())
+##                                            for y in years}
+##      
+##      stdir = "../chalk/s3/res/{}/{}/s2[78][0-9]/*/*.csv"
+##  
+##      metrics = {"Dynamic Radius"        : "dyn_radius",  "Inscribed Circles"      : "ehrenburg",
+##                 "Exchange"              : "exchange",    "Population Hull"        : "hull_p",
+##                 "Isoperimeter Quotient" : "polsby",      "Circumscribing Circles" : "reock", 
+##                 "Rohrbach"              : "rohrbach",    "Power Diagram"          : "power",
+##                 "Split-Line"            : "split"}
+##  
+##  
+##      seat_res = {}
+##      for ti, m in metrics.items():
+##          # print(ti, sorted(glob.glob(stdir.format(usps, m))))
+##          seat_res[m] = map_seats(ti, glob.glob(stdir.format(usps, m)), votes, years, final_table)
+##  
+##      seat_res["107"] = cdmap_seats("107th Congress", 107, epsg, fips, votes, years, final_table)
+##      seat_res["111"] = cdmap_seats("111th Congress", 111, epsg, fips, votes, years, final_table)
+##      seat_res["114"] = cdmap_seats("114th Congress", 114, epsg, fips, votes, years, final_table)
+##  
+##      final_table.columns = pd.MultiIndex.from_tuples([(usps.upper(), yr) for yr in years])
+##  
+##      return seat_res, final_table
 
 
 def plot_share(data, state, method, seats, mark_competitive = True, for_table = False):
@@ -264,14 +278,20 @@ def plot_share(data, state, method, seats, mark_competitive = True, for_table = 
 
     f, ax = plt.subplots(1, 1, figsize = size)
 
-    sns.distplot(dwins, kde=False, ax = ax, bins=np.arange(0, 1.01, 0.025),
-                 hist_kws={"linewidth" : 0.2, "rwidth" : 0.85, 'weights' : dW,
-                                "alpha" : 1, "color" : "#56A8F7"})
+
+    ## Warning about normed -> density keyword, 
+    ##   from matplotlib through seaborn.
+    with warnings.catch_warnings():
+        warnings.simplefilter("ignore")
+
+        sns.distplot(dwins, kde=False, ax = ax, bins=np.arange(0, 1.01, 0.025),
+                     hist_kws={"linewidth" : 0.2, "rwidth" : 0.85, 'weights' : dW,
+                                    "alpha" : 1, "color" : "#56A8F7"})
 
 
-    sns.distplot(rwins, kde=False, ax = ax, bins=np.arange(0, 1.01, 0.025),
-                 hist_kws={"linewidth" : 2, "rwidth" : 0.85, 'weights' : rW,
-                           "alpha" : 1, "color" : "#EC595A"})
+        sns.distplot(rwins, kde=False, ax = ax, bins=np.arange(0, 1.01, 0.025),
+                     hist_kws={"linewidth" : 2, "rwidth" : 0.85, 'weights' : rW,
+                               "alpha" : 1, "color" : "#EC595A"})
 
     ax.set_xlabel("Republican Vote Share")
     ax.set_ylabel("Average Seats / Plan")
@@ -292,7 +312,7 @@ def plot_share(data, state, method, seats, mark_competitive = True, for_table = 
                                linewidth = 0, hatch = "///" * (1 + for_table),
                                fill = False, color = "grey", alpha = 1, zorder = -10))
 
-    f.savefig("figs/{}_{}.pdf".format(state.lower(), method), bbox_inches = 'tight', pad_inches = 0.02)
+    f.savefig("comp_hist/{}_{}.pdf".format(state.lower(), method), bbox_inches = 'tight', pad_inches = 0.02)
 
     plt.close("all")
 
@@ -667,12 +687,12 @@ def party_seats(cd_gdf, seats):
 
 
 
-min_rep = pd.read_csv(os.path.dirname(os.path.realpath(__file__)) + "/min_rep.csv")
+min_rep = pd.read_csv(os.path.dirname(os.path.realpath(__file__)) + "/data/min_rep.csv")
 min_rep = min_rep[min_rep.Session == 115].copy(deep = True)
 min_rep.reset_index(drop = True, inplace = True)
 
-probit_b = sm_dm.Probit(min_rep["BRep"], min_rep[["BFrac", "const"]]).fit(disp=0)
-probit_h = sm_dm.Probit(min_rep["HRep"], min_rep[["HFrac", "const"]]).fit(disp=0)
+probit_b = sm_dm.Probit(min_rep["BRep"], min_rep[["black_vap_frac",    "const"]]).fit(disp=0)
+probit_h = sm_dm.Probit(min_rep["HRep"], min_rep[["hispanic_vap_frac", "const"]]).fit(disp=0)
 
 def minority_seats(cd_gdf, seats = 0):
     
@@ -685,7 +705,7 @@ def minority_seats(cd_gdf, seats = 0):
     return cd_gdf["BSeats"].sum() * seat_scale, cd_gdf["HSeats"].sum() * seat_scale
     
 
-dec = pd.read_csv(os.path.dirname(os.path.realpath(__file__)) + "/decennial_compactness.csv")
+dec = pd.read_csv(os.path.dirname(os.path.realpath(__file__)) + "/data/decennial_compactness.csv")
 
 pca = PCA(n_components = 2)
 pca.fit(dec.filter(regex = "^obj"))
