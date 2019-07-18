@@ -21,7 +21,7 @@ Because I used Census tracts for the clustering,
   precinct were first merged to Census tracts that contained their centroids,
   and a nearest neighbor match was then used to match any unmatched precincts.
   
-In North Carolina and Louisiana, provisional and absentee ballots
+In Louisiana, North Carolina, and Tennessee, provisional and absentee ballots
   are reported at the county level.
 I reallocate Democractic and Republican votes back 
   to precincts according to each precinct's share of _that party's_
@@ -35,6 +35,10 @@ The `mapped/` directory contains geojson files of the precinct returns
   for each state/year, which can be viewed natively on github.
 (In Maryland 2016, this works a bit less well, since I had polling places 
   instead of precinct boundaries, and the points do not display as nicely.)
+I end each notebook with a call of
+  [map_sanity_check()](https://github.com/JamesSaxon/district_analysis/blob/master/dist_tools.py#L117]),
+  which reads in the completed data along with the Census tract geometry.
+While developing these scripts, I had additional checks to ensure that no votes were lost in the process.
 
 There are (brief!) notes on the strategy for each state, at the outset of each notebook.
 This mirrors exactly the data description from the appendix of the paper.
