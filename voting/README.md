@@ -1,7 +1,7 @@
 # Voting Data
 
 The voting data for this project were drawn from a number of sources:
-  the excellent and ambitious project by Ansolabehere, Rodden et al. (mostly for earlier data),
+  the excellent and ambitious project by [Ansolabehere, Rodden et al.](https://dataverse.harvard.edu/dataset.xhtml?persistentId=hdl:1902.1/21919) (mostly for earlier data),
   [Voter Tabulation Districts (VTDs) from the Census](https://www2.census.gov/geo/tiger/TIGER2010/VTD/2010/)
     and data from individiual states and even counties.
 States were chosen simply based on the availability of data, 
@@ -18,11 +18,11 @@ Shapefiles and voting returns often use slightly different names,
   so these were stitched together with manual edits and human-verified fuzzy matches.
 Because I used Census tracts for the clustering,
   the process ended with a merge from precincts to clusters:
-  precinct were first merged to Census tracts that contained their centroids,
-  and a nearest neighbor match was then used to match any unmatched precincts.
-In the state-leve descriptions below, I will call this the _standard match_.
+  precincts were first merged to Census tracts that contained their centroids,
+  and a nearest neighbor match was then used to match any unmatched precincts
+  (see [`../dist_tools.py`](https://github.com/JamesSaxon/district_analysis/blob/master/dist_tools.py#L100)).
   
-In North Carolina and Louisiana, provisional and absentee ballots
+In Louisiana, North Carolina, and Tennessee, provisional and absentee ballots
   are reported at the county level.
 I reallocate Democractic and Republican votes back 
   to precincts according to each precinct's share of _that party's_
@@ -36,6 +36,12 @@ The `mapped/` directory contains geojson files of the precinct returns
   for each state/year, which can be viewed natively on github.
 (In Maryland 2016, this works a bit less well, since I had polling places 
   instead of precinct boundaries, and the points do not display as nicely.)
+I end each notebook with a call of
+  [map_sanity_check()](https://github.com/JamesSaxon/district_analysis/blob/master/dist_tools.py#L117]),
+  which reads in the completed data along with the Census tract geometry.
+While developing these scripts, I had additional checks to ensure that no votes were lost in the process.
+
+### Included States:
 
 There are (brief!) notes on the strategy for each state, at the outset of each notebook.
 This mirrors exactly the data description from the appendix of the paper.
