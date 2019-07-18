@@ -40,6 +40,8 @@ I end each notebook with a call of
   which reads in the completed data along with the Census tract geometry.
 While developing these scripts, I had additional checks to ensure that no votes were lost in the process.
 
+### Included States:
+
 There are (brief!) notes on the strategy for each state, at the outset of each notebook.
 This mirrors exactly the data description from the appendix of the paper.
 * Florida (2008)
