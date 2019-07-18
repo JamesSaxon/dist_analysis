@@ -210,52 +210,6 @@ def cdmap_seats(sessn, usps, votes = None):
 
 
 
-##  def seat_table(usps, years):
-##  
-##      votes = pd.read_csv("voting/votes/{}.csv".format(usps), index_col = "rn")
-##  
-##      st = pd.read_sql("select seats, epsg, lower(usps) usps, fips from states where usps = upper('{}');".format(usps),
-##                       con = psycopg2.connect(database = "census", user = user, password = passwd,
-##                                              host = "saxon.harris.uchicago.edu", port = 5432)).ix[0].to_dict()
-##      
-##      epsg, fips = st["epsg"], st["fips"]
-##      
-##      final_table = pd.DataFrame(columns = [str(y) for y in years],
-##                                 index   = ["Statewide Votes", "107th Congress", "111th Congress", "114th Congress",
-##                                            "Power Diagram", "Split-Line", "Isoperimeter Quotient", "Rohrbach", 
-##                                            "Exchange", "Population Hull", "Dynamic Radius", "Inscribed Circles",
-##                                            "Circumscribing Circles", "Path Fraction"])
-##  
-##      final_table.columns.name = usps.upper()
-##      
-##      final_table.loc["Statewide Votes"] = {str(y) :  votes["D{:02d}".format(y % 100)].sum() / \
-##                                                     (votes["D{:02d}".format(y % 100)].sum() + \
-##                                                      votes["R{:02d}".format(y % 100)].sum())
-##                                            for y in years}
-##      
-##      stdir = "../chalk/s3/res/{}/{}/s2[78][0-9]/*/*.csv"
-##  
-##      metrics = {"Dynamic Radius"        : "dyn_radius",  "Inscribed Circles"      : "ehrenburg",
-##                 "Exchange"              : "exchange",    "Population Hull"        : "hull_p",
-##                 "Isoperimeter Quotient" : "polsby",      "Circumscribing Circles" : "reock", 
-##                 "Rohrbach"              : "rohrbach",    "Power Diagram"          : "power",
-##                 "Split-Line"            : "split"}
-##  
-##  
-##      seat_res = {}
-##      for ti, m in metrics.items():
-##          # print(ti, sorted(glob.glob(stdir.format(usps, m))))
-##          seat_res[m] = map_seats(ti, glob.glob(stdir.format(usps, m)), votes, years, final_table)
-##  
-##      seat_res["107"] = cdmap_seats("107th Congress", 107, epsg, fips, votes, years, final_table)
-##      seat_res["111"] = cdmap_seats("111th Congress", 111, epsg, fips, votes, years, final_table)
-##      seat_res["114"] = cdmap_seats("114th Congress", 114, epsg, fips, votes, years, final_table)
-##  
-##      final_table.columns = pd.MultiIndex.from_tuples([(usps.upper(), yr) for yr in years])
-##  
-##      return seat_res, final_table
-
-
 def plot_share(data, state, method, seats, mark_competitive = True, for_table = False):
 
     weight = seats / len(data[state][method])
