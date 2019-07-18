@@ -1,7 +1,7 @@
 # Voting Data
 
 The voting data for this project were drawn from a number of sources:
-  the excellent and ambitious project by Ansolabehere, Rodden et al. (mostly for earlier data),
+  the excellent and ambitious project by [Ansolabehere, Rodden et al.](https://dataverse.harvard.edu/dataset.xhtml?persistentId=hdl:1902.1/21919) (mostly for earlier data),
   [Voter Tabulation Districts (VTDs) from the Census](https://www2.census.gov/geo/tiger/TIGER2010/VTD/2010/)
     and data from individiual states and even counties.
 States were chosen simply based on the availability of data, 
