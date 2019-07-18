@@ -17,9 +17,10 @@ The original, raw data can be made available upon request.
 Shapefiles and voting returns often use slightly different names,
   so these were stitched together with manual edits and human-verified fuzzy matches.
 Because I used Census tracts for the clustering,
-  the process ended with a merge from precincts to clusters (see [`../dist_tools.py`](https://github.com/JamesSaxon/district_analysis/blob/master/dist_tools.py#L100):
-  precinct were first merged to Census tracts that contained their centroids,
-  and a nearest neighbor match was then used to match any unmatched precincts.
+  the process ended with a merge from precincts to clusters:
+  precincts were first merged to Census tracts that contained their centroids,
+  and a nearest neighbor match was then used to match any unmatched precincts
+  (see [`../dist_tools.py`](https://github.com/JamesSaxon/district_analysis/blob/master/dist_tools.py#L100)).
   
 In Louisiana, North Carolina, and Tennessee, provisional and absentee ballots
   are reported at the county level.
