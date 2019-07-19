@@ -11,7 +11,9 @@ There are four components to the C4 Analysis.  These are divided between two rep
    * *Replication suggestion 1*: First, build the package or pull the non-Amazon docker container to run the code and generate districts.
      Instructions for this are in the other repo, but it basically comes to one line of code:
      ```
-     docker run -v $(pwd)/res/:/C4/res/ -e STATE=pa -e SEED=2 -e METHOD=POWER --rm -it  jamessaxon/c4:replication
+     docker run -v $(pwd)/res/:/C4/res/ \
+                -e STATE=pa -e SEED=2 -e METHOD=POWER \
+                --rm -it  jamessaxon/c4:replication
      ```
      Only the 11 states with voting data (FL, IL, LA, MD, MN, NC, PA, TX, TN, VA, WI) will generate winners and losers. 
      Other states should all work, though California may get slow.
