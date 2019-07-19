@@ -18,7 +18,7 @@ There are four components to the C4 Analysis.  These are divided between two rep
                 -v $(pwd)/res/:/C4/res/ \
                 --rm -it  jamessaxon/c4:replication
      ```
-     You can examine the results produced
+     The results will be written to `res/` on your machine.
    * *Replication suggestion 2*: Then head to this [interactive map](https://saxon.harris.uchicago.edu/redistricting_map/), where many maps (but not all) can be viewed.  Please consider, however, that this is an outreach project and not an "official" part of the analysis.  Where there are discrepancies, the official analysis has priority.  In particular, the map has a fault in the Virginia voting data (excluded from the paper, though fixed in this repo).
 4. *Analysis*: This is the work of most of the scripts in _this_ directory/repo, which picks up after districts have been simulated on AWS.
    * *Replication suggestion*: run the code to reproduce figures, as described below.
