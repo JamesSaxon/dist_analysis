@@ -14,7 +14,7 @@ There are four components to the C4 Analysis.  These are divided between two rep
      Only the 11 states with voting data (FL, IL, LA, MD, MN, NC, PA, TX, TN, VA, WI) will generate winners and losers. 
      Other states should all work, though California may get slow.
      Instructions for this are in the [c4 repo](https://github.com/JamesSaxon/C4#running-c4-as-a-docker-container-simple),
-     but running in from the image on [DockerHub](https://cloud.docker.com/repository/docker/jamessaxon/c4) comes to just one line of code:
+     but running from the image on [DockerHub](https://cloud.docker.com/repository/docker/jamessaxon/c4) is a one-liner:
      ```
      docker run -e STATE=pa -e SEED=2 -e METHOD=POWER -e SHADING=all \
                 -v $(pwd)/res/:/C4/res/ \
