@@ -2,6 +2,9 @@
 
 from dist_tools import *
 
+# Calculate all spatial, demographic, and vote scores of
+# districts enacted for the 107th, 11th, and 114th Congresses.
+
 columns = {'cd': "ID", "pop_ratio" : "Pop./Target", "a_sq_mi" : 'Area [sq mi]', 
            "obj_dyn_radius": 'DynamicRadius', "obj_polsby" : 'IPQ', 
            "obj_axis" : 'AxisRatio', "obj_exchange" : 'Exchange', "obj_lic" : 'InscrCircle', 
@@ -18,9 +21,7 @@ metrics_cols = ['usps', 'congress', 'year', 'cd', 'pop', 'pop_ratio',
 		'obj_ip_dist', 'obj_polsby', 'obj_lic', 'obj_scc', 'obj_inertia_a', 'obj_inertia_p', 'obj_mean_radius',
 		'obj_harm_radius', 'obj_dyn_radius', 'obj_axis', 'obj_exchange', 'obj_hull_pop', 'obj_hull_area', 'obj_rohrbach']
 
-
 os.makedirs("cd", exist_ok = True)
-
 
 us_states = ["al", "ak", "az", "ar", "ca", "co", "ct", "de", "dc", "fl",
              "ga", "hi", "id", "il", "in", "ia", "ks", "ky", "la", "me",
@@ -28,36 +29,43 @@ us_states = ["al", "ak", "az", "ar", "ca", "co", "ct", "de", "dc", "fl",
              "nj", "nm", "ny", "nc", "nd", "oh", "ok", "or", "pa", "ri",
              "sc", "sd", "tn", "tx", "ut", "vt", "va", "wa", "wv", "wi", "wy"]
 
-first = ["pa", "fl", "wi", "nc", "md", "mn", "il", "wi", "tx", "ca", "va"]
+# first = ["pa", "fl", "wi", "nc", "md", "mn", "il", "wi", "tx", "ca", "va"]
 
-for usps in first:
+for usps in us_states:
 
     for year, sessn in [[1990, 107], [2000, 111], [2010, 114]]:
         
         epsg, fips, seats = get_state_info(usps)
         if seats == 1: continue
 
+        # Logging, since this is super slow.
+        print(usps, year, sessn, seats, epsg, fips)
         with open("run_historic.sub", "a") as out:
             out.write("{} {} {} {} {} {}\n".format(usps, year, sessn, seats, epsg, fips))
-        print(usps, year, sessn, seats, epsg, fips)
 
+        # CD boundaries; block geometries for 2000, 2010 and block groups for 1990.
         cd_gdf = get_state_cd_map(usps, sessn, year, epsg)
-        pt_gdf = get_state_cells(usps, year, epsg, "bg" if (seats == 1 or year == 1990) else "blocks")
+        pt_gdf = get_state_cells(usps, year, epsg, "bg" if (year == 1990) else "blocks")
 
         try:
+            
+            # Evaluate the spatial indicies.
             evaluate_spatial(cd_gdf, pt_gdf)
 
         except MemoryError:
             with open("run_historic.sub", "a") as out:
             	out.write(" >> Recovering from MemoryError -- switching to block groups\n")
 
+            # If that fails due to memory, downshift to block groups.
             cd_gdf = get_state_cd_map(usps, sessn, year, epsg)
             bl_gdf = get_state_cells(usps, year, epsg, "bg")
             evaluate_spatial(cd_gdf, bl_gdf)
         
+        # Same thing for demographics and votes.
         evaluate_demographics(cd_gdf, pt_gdf, usps, epsg)
         vote_list = sorted(list(cd_gdf.filter(regex = r"Vote|Share|Frac|Pop").columns))
                 
+        # Save it.
         output_geojson(cd_gdf.reset_index().rename(columns = columns)\
                              [list(columns.values()) + vote_list + ["geometry"]],
                        "cd/{}_{}.geojson".format(usps, sessn))
@@ -68,7 +76,7 @@ for usps in first:
 
 
 
-
+# Other legislative districts.
 for usps, tag, house, leg_year, data_year in []: # [["wi", "wi_as", "L", 2016, 2010]]
 
     epsg, fips, _ = get_state_info(usps)
