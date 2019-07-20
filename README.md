@@ -28,8 +28,43 @@ There are four components to the C4 Analysis.  These are divided between two rep
 ## Processing Code in this Repository
 
 ### Extracting state json files from bulk sim
-### Merging simulation and voting data
+The C4 program [outputs](https://github.com/JamesSaxon/c4#outputs) 
+  json, csv, and geojson data for generated districts.
+The csv files are simple tract to seat assignments,
+  but the json and geojson contain fairly broad descriptions of district demographics,
+    partisanship, spatial scores, population deviations, and so forth.
+
+The full simulation for the 11 core states came to around 30k maps.
+It was computationally inefficient to load each of these individually.
+I therefore used the excellent json manipulation library
+  [`jq`](https://stedolan.github.io/jq/manual/)
+  to combine these into single files.
+The jq scripts are as follows: 
+* The main jq manipulation is `extract.jq` which is run by `extract.sh`.
+  This is the code that pulls out all voting returns,
+  and creates a single output file for the main tables of the paper.
+* For Appendix G (post-selection of minority majority districts),
+  I select plans with at least two "minority" seats 
+  (defined as both over half Democratic and more than 30\% Black VAP),
+  and record the two Democratic seats with the highest share Black.
+  These are scripts `nc_race_extract.jq` and `nc_race_shares.jq`.
+
+### Merging district simulation and voting data
+
+I updated the vote aggregation process several times, 
+  by improving the spatial correspondence between precincts and tracts.
+I also corrected a bug that affected two Texas elections, at an earlier stage of this review.
+
+These updated vote tallies of course affect partisan outcomes.
+The [`update_election_json.ipynb`](update_election_json.ipynb) notebook performs this update.
+The code is closely commented and should be self-explanatory.
+It writes files for analysis to `data/{date}/{st}_redux.json`.
+The committed version of the data is the one created
+  while preparing the replication materials, `190717`.
+
 ### Evaluating the spatial properties of historical districts
+
+### Power Diagram Districts
 
 ## Generating Tables and Figure
 
