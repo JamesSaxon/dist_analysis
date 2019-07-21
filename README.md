@@ -25,7 +25,7 @@ There are four components to the C4 Analysis.  These are divided between two rep
 4. *Analysis*: This is the work of most of the scripts in _this_ directory/repo, which picks up after districts have been simulated on AWS.
    * *Replication suggestion*: run the code to reproduce figures, as described below.
    
-## Processing Code in this Repository
+## Data and Processing Code in this Repository
 
 ### Extracting state json files from bulk sim
 The C4 program [outputs](https://github.com/JamesSaxon/c4#outputs) 
@@ -34,7 +34,7 @@ The csv files are simple tract to seat assignments,
   but the json and geojson contain fairly broad descriptions of district demographics,
     partisanship, spatial scores, population deviations, and so forth.
 
-The full simulation for the 11 core states came to around 30k maps.
+The full simulation came to around 30k maps, for each of the 11 core states.
 It was computationally inefficient to load each of these individually.
 I therefore used the excellent json manipulation library
   [`jq`](https://stedolan.github.io/jq/manual/)
@@ -43,6 +43,7 @@ The jq scripts are as follows:
 * The main jq manipulation is `extract.jq` which is run by `extract.sh`.
   This is the code that pulls out all voting returns,
   and creates a single output file for the main tables of the paper.
+  These files are not included; instead, the files with final votes are (next section).
 * For Appendix G (post-selection of minority majority districts),
   I select plans with at least two "minority" seats 
   (defined as both over half Democratic and more than 30\% Black VAP),
@@ -60,16 +61,52 @@ The [`update_election_json.ipynb`](update_election_json.ipynb) notebook performs
 The code is closely commented and should be self-explanatory.
 It writes files for analysis to `data/{date}/{st}_redux.json`.
 The committed version of the data is the one created
-  while preparing the replication materials, `190717`.
+  while preparing the replication materials, [`data/190717/`](data/190717/).
 
 ### Evaluating the spatial properties of historical districts
 
+For appendix J (correlations and principal component analysis of enacted maps),
+  the compactness scores of enacted districts are needed.
+These scores are evaluated using geopandas instead of C4.
+The functions are defined in `dist_tools.py`.
+They are called in `run_historic_tracts.py`.
+This evaluates spatial scores at the same granularity as C4,
+  although some approximations differ.
+For example, C4 replaces cell geometries with centroids in many cases (like convex hull) 
+    where `dist_tools.py` uses the actual geometry.
+The data are saved to `data/decennial_census.*` for inspection.
+
+The similar script, `run_historic_blocks.py`
+  was used to calculate spatial and demographics scores at finer 
+  granularity, for the [webmap](https://saxon.harris.uchicago.edu/redistricting_map/).
+In that case, the exact populations were necessary,
+  since I also aggregated the demographic characteristics and calculated the population deviance.
+But the same functions are called.
+
 ### Power Diagram Districts
+
+* state maps for race!!
 
 ## Generating Tables and Figure
 
+The scripts in this section are the ones
+  that the replicator is expected to run.
+
 ### State-Level Seat Share Tables
+* Code: [`main_tables.ipynb`](main_tables.ipynb)
+
 ### Competitiveness Table
+* Code: [`main_tables.ipynb`](main_tables.ipynb)
+
 ### Minority Seat Share
+* Code: [`minority_seats.ipynb`](minority_seats.ipynb)
+
+### Pennsylania Plans
+### Appendix: Non-Compact Districts
+### Appendix: North Carolina Race 
 ### Appendix: County Splits
-### Appendix: PCA of Historic Seats
+
+* polsby_w
+
+### Appendix: PCA of Historic Seats: `app_historic_interp_corr.ipynb`
+
