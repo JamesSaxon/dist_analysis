@@ -3,7 +3,8 @@
 ## Overview of the Analysis
 
 There are four components to the C4 Analysis.  These are divided between two repositories.
-1. *Geographies*: these are shapefiles drawn from the US Census, preprocessed using postgres/postgis.  The scripts used to build this database can be found in the [c4 repository in the `db/` directory](https://github.com/JamesSaxon/C4/tree/master/db).  A [README](https://github.com/JamesSaxon/C4/blob/master/db/README.md) in that folder describes those scripts.  To avoid dependence on this private database, the data are also cached and saved in [`c4/shapes/`](https://github.com/JamesSaxon/C4/tree/master/shapes) and [`c4/demographics/`](https://github.com/JamesSaxon/C4/tree/master/demographic).
+1. *Geographies*: these are shapefiles drawn from the US Census, preprocessed using postgres (9.5.17, with postgis 2.2.1, on Ubuntu 16.04.6 LTS).
+   The scripts used to build this database can be found in the [c4 repository in the `db/` directory](https://github.com/JamesSaxon/C4/tree/master/db).  A [README](https://github.com/JamesSaxon/C4/blob/master/db/README.md) in that folder describes those scripts.  To avoid dependence on this private database, the data are also cached and saved in [`c4/shapes/`](https://github.com/JamesSaxon/C4/tree/master/shapes) and [`c4/demographics/`](https://github.com/JamesSaxon/C4/tree/master/demographic).
    * *Replication suggestion*: check the import scripts and verify that the cached data in `shapes/` are sensible.
 2. *Election data*: these data are drawn from the Census Voter Tabulation Districts from 2010, state and county election websites, and the work by [Ansolabehere, Rodden et al.](https://dataverse.harvard.edu/dataset.xhtml?persistentId=hdl:1902.1/21919).  The scripts for munging these input data are in this repository, in the [`voting/`](https://github.com/JamesSaxon/district_analysis/tree/master/voting) directory.  The script for each individual state describes the sources and the strategy for that state (they are pretty consistent).
    
@@ -24,6 +25,23 @@ There are four components to the C4 Analysis.  These are divided between two rep
    * *Replication suggestion 2*: Then head to this [interactive map](https://saxon.harris.uchicago.edu/redistricting_map/), where many maps (but not all) can be viewed.  Please consider, however, that this is an outreach project and not an "official" part of the analysis.  Where there are discrepancies, the official analysis has priority.  In particular, the map has a fault in the Virginia voting data (excluded from the paper, though fixed in this repo).
 4. *Analysis*: This is the work of most of the scripts in _this_ directory/repo, which picks up after districts have been simulated on AWS.
    * *Replication suggestion*: run the code to reproduce figures, as described below.
+
+## Required Software
+
+The analysis scripts use the following standard python libraries,
+which can be installed most-easily through Anaconda.
+I note the versions on my own machine.
+* matplotlib (2.2.2)    - general plotting
+* seaborn (0.7.1)       - plot styling...
+* geopandas (0.4.1)     - mapping (require gdal)
+* pandas (0.24.2)       - general analysis
+* numpy (1.15.2)        - numerical simulations
+* statsmodels (0.9.0)   - probit model for race
+* scipy (1.1.0)         - general statistics
+* scikit-learn (0.18.1) - PCA of historic districts, in appendix.
+* pyproj (1.9.5.1)      - map projecting (c4 only)
+* pysal (1.14.4)        - to generate contiguity matrix (c4 only)
+* cython (0.28.5)       - wrapping c++ to python (c4 only)
    
 ## Data and Processing Code in this Repository
 
@@ -34,9 +52,10 @@ The csv files are simple tract to seat assignments,
   but the json and geojson contain fairly broad descriptions of district demographics,
     partisanship, spatial scores, population deviations, and so forth.
 
-The full simulation came to around 30k maps, for each of the 11 core states.
+The full simulation came to around 30k maps, for each of the 11 core states;
+  adding in the power diagrams for the full country, it is about 55 GB of raw data.
 It was computationally inefficient to load each of these individually.
-I therefore used the excellent json manipulation library
+I therefore used the excellent json manipulation tool
   [`jq`](https://stedolan.github.io/jq/manual/)
   to combine these into single files.
 The jq scripts are as follows: 
@@ -44,6 +63,8 @@ The jq scripts are as follows:
   This is the code that pulls out all voting returns,
   and creates a single output file for the main tables of the paper.
   These files are not included; instead, the files with final votes are (next section).
+* For the power diagram districting and the implications for minorities, 
+  minority VAP fractions for each district are extracted using `power_minority.jq` and `power_minority.sh`.
 * For Appendix G (post-selection of minority majority districts),
   I select plans with at least two "minority" seats 
   (defined as both over half Democratic and more than 30\% Black VAP),
@@ -92,21 +113,139 @@ But the same functions are called.
 The scripts in this section are the ones
   that the replicator is expected to run.
 
+A note on the data.
+This was a bit of a balance to strike, 
+  between the very low-density json data,
+  and providing data that is _so_ processed
+    that the replication itself is uninformative.
+I have tried to skew towards the raw side (jq output) for the main results.
+For the tables of the appendices,
+  I did not always pre-consider how easy it would be to provide data
+  in my responses to the referees.
+The county-split table in particular is challenging
+  without my local database and _all_ of the simulated data for MD, NC, and PA,
+  and the table is only peripheral to the main argument.
+For this table, I saved all partitionings of MD, NC, and PA.
+Even compressed, these files cannot be uploaded to GitHub
+  (though they could go to LFS, I don't want to pay for this),
+  so they are only on the dataverse.
+
+In all cases, the code to calculcate the derived data is provided,
+  and the raw data can be made available on request.
+The files are a bit large for the dataverse -- 
+  _uncompressed_ the data come to around 55 GB;
+  dropping geojson and tarring comes 20 GB.
+I worked on compressing and reducing at some length, 
+  and got the raw data under 10 GB.
+So if necessary, I could split up states and get this onto the dataverse.
+(The maximum file size is 2 GB, 
+  and it seems that the dataset limit is 10 GB.)
+
 ### State-Level Seat Share Tables
+
 * Code: [`main_tables.ipynb`](main_tables.ipynb)
+
+If C4 is the main "product" of the paper,
+  the competitiveness and party share tables 
+  are its main _results_.
+These tables are fundamentally really simple:
+  histograms and means for a bunch of different elections
+    and partitioning methods (enacted and simulated).
+The code should thus be straightforward.
+It loads the jq'ed data,
+  runs the plotting functions and calculates means or integrals,
+  and finally runs a bunch of string manipulation to prettify the LaTeX outputs.
+
+Note that the tables are built in a slightly unorthodox way:
+  each of the "mini-histograms" in the table is
+  a figure within a cell.
+So the output of the code is
+  (a) a latex file and (b) lots of mini-histograms.
 
 ### Competitiveness Table
 * Code: [`main_tables.ipynb`](main_tables.ipynb)
 
+The competitiveness table runs in the same notebook as the seat shares,
+  and is built in basically the same way.
+
 ### Minority Seat Share
 * Code: [`minority_seats.ipynb`](minority_seats.ipynb)
 
+Minority seat shares first loads jq'ed power diagram simulation data.
+It orders the seat shares and weights to create the "survival function"
+  of minority seats against minority share.
+It then runs a simple probit model of minority representation.
+All of this should be clear from the code and its comments.
+
+This model relies on the ethnic/racial identities of Representatives
+  from the House's official history pages for [Blacks](http://history.house.gov/Exhibitions-and-Publications/BAIC/Historical-Data/Black-American-Representatives-and-Senators-by-Congress/)
+  and [Hispanics](http://history.house.gov/Exhibitions-and-Publications/HAIC/Historical-Data/Hispanic-American-Representatives,-Senators,-Delegates,-and-Resident-Commissioners-by-Congress/),
+  and analogous sources from the Press Gallery ([Blacks])https://pressgallery.house.gov/member-data/demographics/african-americans), [Hispanics](https://pressgallery.house.gov/member-data/demographics/hispanic-americans)).
+There are a few discrepancies between these -- members in the press gallery but not in the History page, when I retrived it.
+Those members are: Trent Franks R-AZ-8. John Garamendi D-CA-3, and Brian Mast R-FL-18.
+I have include all three of them.
+
+As for replacements, Chaka Fattah was replaced by Dwight Evants, and Xavier Becerra was replaced by Jimmy Gomez.
+In each case, the ethnicity/race stayed the same, and so I included the districts just once.
+
+Pew Research puts out pretty much the
+  [same article on diversity](http://www.pewresearch.org/fact-tank/2017/01/24/115th-congress-sets-new-high-for-racial-ethnic-diversity/),
+  for each Congress, which is also relevant.
+
 ### Pennsylania Plans
-### Appendix: Non-Compact Districts
+
+### Appendix: The Least Compact Districts 
+i.e., bad districts 
+
 ### Appendix: North Carolina Race 
+
+* Code: [`app_post_selection_nc.ipynb`](app_post_selection_nc.ipynb)
+
+This code simply uses the most and second-most Black districts,
+  as extracted with the jq files.
+This creates violin plots of Black fraction,
+  for the discussion of post-selection or post-analysis of 
+  and "ancillary" properties of simulated districts.
+
 ### Appendix: County Splits
 
-* polsby_w
+* Code: [`app_county_splits.ipynb](app_county_splits.ipynb)
 
-### Appendix: PCA of Historic Seats: `app_historic_interp_corr.ipynb`
+The question here is whether the compactness-based simulation
+  "endangers" other districting principles.
+To evaluate this, I calculated the 
+  likelihood of a county resident having the same representative
+  as someone else in his or her county.
+This is corrected for the fact that some counties
+  contain many Congressional districts, and in this case, 
+  co-representation is of course impossible.
+The evaluated quantity is thus pop(CD ∩ county) / min(pop(CD), pop(county)).
+
+I prepared this table in reponse to a reviewer's question,
+  and it is the one table where I did not preconsider the ease of replicability.
+I have therefore copied a lot of data to allow this one to be calculated from the dataverse files.
+Sorry that it is somewhat slow and memory intensive.
+
+### Appendix: PCA of Historic Seats
+
+* Code: [`app_historic_interp_corr.ipynb`](app_historic_interp_corr.ipynb)
+
+This appendix considers a PCA of districts
+  from multimember states over the past three districting cycles (107th, 11th, and 114th Congresses).
+The aim is to understand the degree to which _compactness_ is a single concept
+  (think: Massey/Denton segregation, but for shapes).
+The result is that between 60 and 70% of the loading is on a single dimension,
+  though this would of course change as a function of the sample
+  and the specific compactness definitions included in the first place.
+
+The relevance to the main argument is that interpersonal distance
+  (which is closely related to the power diagram algorithm),
+  is strongly correlated with the first component.
+This is part of the justification for using it for the whole country,
+  in the analysis of the impacts on minority representation.
+  
+This procedure is also used to identify the "worst" 5 districts of the
+  114th Congress (based on the first component of the PCA),
+  which are also plotted.
+
 
