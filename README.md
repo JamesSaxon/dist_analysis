@@ -209,7 +209,7 @@ This creates violin plots of Black fraction,
 
 ### Appendix: County Splits
 
-* Code: [`app_county_splits.ipynb](app_county_splits.ipynb)
+* Code: [`app_county_splits.ipynb`](app_county_splits.ipynb)
 
 The question here is whether the compactness-based simulation
   "endangers" other districting principles.
