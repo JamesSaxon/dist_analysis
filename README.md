@@ -104,10 +104,6 @@ In that case, the exact populations were necessary,
   since I also aggregated the demographic characteristics and calculated the population deviance.
 But the same functions are called.
 
-### Power Diagram Districts
-
-* state maps for race!!
-
 ## Generating Tables and Figure
 
 The scripts in this section are the ones
@@ -193,9 +189,23 @@ Pew Research puts out pretty much the
   for each Congress, which is also relevant.
 
 ### Pennsylania Plans
+* Code: [`geomap.py`](geomap.py)
+
+This code simply plots the "representative" plots of Pennsylvania,
+  which are stored `data/pa_ex/`, based on seed 280.
+The code simply plots the state colorfully,
+  superimposes a circle over Pittsburgh,
+  and writes the output to `paper_figs/pa_ex/`,
 
 ### Appendix: The Least Compact Districts 
-i.e., bad districts 
+* Code: [`cd_printer.py`](cd_printer.py)
+
+This is just a convenience script to plot
+  a clean pdf of any US Congressional District.
+These can be looked up literally anywhere.
+There is not really any "replication" to do.
+
+The choice of districts is based on the PCA described below.
 
 ### Appendix: North Carolina Race 
 
