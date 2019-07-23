@@ -10,7 +10,11 @@ sns.set_style("white")
 
 import psycopg2
 from netrc import netrc
-user, acct, passwd = netrc().authenticators("harris")
+try:
+    user, acct, passwd = netrc().authenticators("harris")
+except:
+    print("No database connections available!")
+    pass
 
 import os, glob
 
@@ -132,34 +136,34 @@ def map_sanity_check(usps, year, epsg = 4326):
     ax.set_axis_off()
 
 
-def map_seats(name, paths, tract_votes, years, final_table):
-    
-    if not len(paths): return
-    
-    outcomes = pd.DataFrame(columns = [str(y) for y in years])
-    
-    for xi, xpath in enumerate(paths):
-        
-        map_df = pd.read_csv(xpath, names = ["rn", "region"], header = None)
-        mapped_votes = tract_votes.join(map_df)
-        cd_seats = mapped_votes.groupby("region").sum()
-        cd_seats["map_id"] = xi
-        
-        for y in years:
-            var = y if type(y) is str else ("%02d" % (y%100))
-            cd_seats["%s D Fr" % y] = cd_seats["D" + var] / (cd_seats["D" + var] + cd_seats["R" + var])
-            cd_seats[str(y)] = cd_seats["D" + var] > cd_seats["R" + var]
-        
-        outcomes = outcomes.append(cd_seats)
-    
-    final_table.loc[name] = (outcomes > 0.5).mean()
-
-    outcomes["weights"] = 1 / len(paths)
-
-    outcols = ["map_id", "weights"]
-    for y in years: outcols += [str(y), "%s D Fr" % y]
-    
-    return outcomes[outcols]
+##  def map_seats(name, paths, tract_votes, years, final_table):
+##      
+##      if not len(paths): return
+##      
+##      outcomes = pd.DataFrame(columns = [str(y) for y in years])
+##      
+##      for xi, xpath in enumerate(paths):
+##          
+##          map_df = pd.read_csv(xpath, names = ["rn", "region"], header = None)
+##          mapped_votes = tract_votes.join(map_df)
+##          cd_seats = mapped_votes.groupby("region").sum()
+##          cd_seats["map_id"] = xi
+##          
+##          for y in years:
+##              var = y if type(y) is str else ("%02d" % (y%100))
+##              cd_seats["%s D Fr" % y] = cd_seats["D" + var] / (cd_seats["D" + var] + cd_seats["R" + var])
+##              cd_seats[str(y)] = cd_seats["D" + var] > cd_seats["R" + var]
+##          
+##          outcomes = outcomes.append(cd_seats)
+##      
+##      final_table.loc[name] = (outcomes > 0.5).mean()
+##  
+##      outcomes["weights"] = 1 / len(paths)
+##  
+##      outcols = ["map_id", "weights"]
+##      for y in years: outcols += [str(y), "%s D Fr" % y]
+##      
+##      return outcomes[outcols]
 
 
 
@@ -167,6 +171,8 @@ def cdmap_seats(sessn, usps, votes = None):
 
     if votes is None: votes = usps
 
+    # Get the Congressional District geometries
+    # for the given state and session of Congress.
     cd_gdf = gpd.GeoDataFrame.from_postgis("""SELECT cd, cd.geom geometry, epsg
                                               FROM   cd 
                                               JOIN   states ON cd.state = states.fips
@@ -176,21 +182,26 @@ def cdmap_seats(sessn, usps, votes = None):
                                               con = psycopg2.connect(database = "census", user = user, password = passwd,
                                                                      host = "saxon.harris.uchicago.edu", port = 5432),
                                               geom_col = "geometry", crs = from_epsg(2163))
-    epsg = cd_gdf.iloc[0]["epsg"]
 
+    # From the geodataframe, retrieve the epsg,
+    #  and then project it to the local CRS.
+    epsg = cd_gdf.iloc[0]["epsg"]
     cd_gdf = cd_gdf.to_crs(epsg = epsg)
 
     years = {}
     for y in range(1992, 2020, 2):
 
-        votes_file = os.path.expanduser('~/proj/dist_analysis/voting/mapped/{}_{}.geojson'.format(votes.lower(), y))
+        # votes_file = os.path.expanduser('~/proj/dist_analysis/voting/mapped/{}_{}.geojson'.format(votes.lower(), y))
+        votes_file = "voting/mapped/{}_{}.geojson".format(votes.lower(), y)
         if not os.path.isfile(votes_file): continue
 
         v = gpd.read_file(votes_file).to_crs(epsg = epsg)
         v.set_geometry(v.centroid, inplace = True)
 
+        # If the voting precinct is IN a CD -- then great.  Merge that way.
         v = gpd.sjoin(v, cd_gdf, op = "within", how = "left")
 
+        # If it isn't look for the closest one, and record THAT one.
         for vri, vrow in v[v.cd.isnull()].iterrows():
             ctr = vrow.geometry.centroid
             distances = [(cd_row.cd, cd_row.geometry.distance(ctr)) for cdi, cd_row in cd_gdf.iterrows()]
@@ -321,8 +332,8 @@ def avg_interperson_distance(group):
 
     g = group[group["pop"] > 0]
 
-    prod = scipy.spatial.distance.cdist(g[["x", "y"]].as_matrix(),
-                                        g[["x", "y"]].as_matrix(),
+    prod = scipy.spatial.distance.cdist(g[["x", "y"]].values,
+                                        g[["x", "y"]].values,
                                         metric = 'euclidean')
     prod = np.dot(g["pop"], prod)
     prod = np.dot(prod, g["pop"])

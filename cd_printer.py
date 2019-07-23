@@ -11,6 +11,8 @@ user, acct, passwd = netrc().authenticators("harris")
 
 import matplotlib.pyplot as plt
 
+from geomap import map_format
+
 def get_state_cd_map(usps, cd, session = 114, color = "k"):
 
     g = gpd.GeoDataFrame.from_postgis("""SELECT cd, cd.geom, epsg 
@@ -25,7 +27,15 @@ def get_state_cd_map(usps, cd, session = 114, color = "k"):
     ax = g.plot(color = color, alpha = 1, linewidth = 0, figsize = (5, 5))
 
     ax.set_axis_off()
-    ax.figure.savefig("paper_figs/bad_districts/{}_{}_{}.pdf".format(usps, cd, color.replace("#", "")), bbox_inches = 'tight', pad_inches = 0)
+
+    color_label = ""
+    if color != "k":
+        color_label = "_" + color.replace("#" "")
+
+    map_format(ax)
+    ax.figure.savefig("paper_figs/bad_districts/{}_{}{}.pdf".format(usps, cd, color_label), bbox_inches = 'tight', pad_inches = 0.05)
+
+    plt.close("all")
 
 
 for st, cd in [["nc", 12], ["oh", 9], ["fl", 5], ["ny", 10], ["tx", 35]]:
