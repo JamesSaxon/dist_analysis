@@ -1,5 +1,7 @@
 # C4 Political Analysis: Legislative Avenues for Gerrymandering Reform
 
+tl;dr: [replicate the main results](https://github.com/JamesSaxon/district_analysis#state-level-seat-share-tables)
+
 ## Overview of the Analysis
 
 There are four components to the C4 Analysis.  These are divided between two repositories.
