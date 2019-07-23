@@ -97,5 +97,5 @@ This mirrors exactly the data description from the appendix of the paper.
 * Wisconsin (2004-2016): Nearly-Minnesota quality data (thanks, _Gill v. Whitford!_), so not much to do. The addresses have changed since I originally downloaded these, but the formats seem largely the same.
   * http://legis.wisconsin.gov/ltsb/gis/data/
   * https://data-ltsb.opendata.arcgis.com/search?tags=election%20data
-  * https://data-ltsb.opendata.arcgis.com/datasets/2002-2010-wi-election-data-with-2017-wards
+  * https://data-ltsb.opendata.arcgis.com/datasets/2002-2010-wi-election-data-with-2011-wards
   * https://data-ltsb.opendata.arcgis.com/datasets/2012-2020-wi-election-data-with-2017-wards
