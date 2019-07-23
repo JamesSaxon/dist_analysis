@@ -88,8 +88,9 @@ This mirrors exactly the data description from the appendix of the paper.
   * 3D KMZ files are split by counties.  The location has changed since I downloaded these.  The landing page is now: https://apps.cot.tn.gov/DPAMaps/Redistrict/Counties.  A script in the repo shows the download.
 * Texas (2000-2016)
   * 2008-2008 uses election returns by [Ansolabehere, et al. (2015)](https://dataverse.harvard.edu/dataset.xhtml?persistentId=hdl:1902.1/21919)
-  * For 2012 and 2016, the [shapefiles](ftp://ftpgis1.tlc.state.tx.us/2011_Redistricting_Data/VTDs/Geography/) and 
-  [election returns](ftp://ftpgis1.tlc.state.tx.us/elections) are from the Texas Secretary of State.
+  * For 2012 and 2016, the shapefiles and election returns are from the Texas Secretary of State:
+    * ftp://ftpgis1.tlc.state.tx.us/2011_Redistricting_Data/VTDs/Geography/
+    * ftp://ftpgis1.tlc.state.tx.us/elections
 * Virginia (2016)
   * Initial shapefile from the [VA Public Access Project](https://github.com/vapublicaccessproject/va-precinct-maps-2016).  These were faulty/mismatched for Roanoke, and new data was obtained from the county GIS office.
   * Election _returns_ are from the state's excellent [historical election viewer](https://historical.elections.virginia.gov/elections/view/80871/), which hides (very slightly) an [API](http://historical.elections.virginia.gov/elections/download/80871/precincts_include:1/).
