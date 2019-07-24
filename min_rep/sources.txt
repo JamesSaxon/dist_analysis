@@ -1,0 +1,16 @@
+http://history.house.gov/Exhibitions-and-Publications/BAIC/Historical-Data/Black-American-Representatives-and-Senators-by-Congress/
+http://history.house.gov/Exhibitions-and-Publications/HAIC/Historical-Data/Hispanic-American-Representatives,-Senators,-Delegates,-and-Resident-Commissioners-by-Congress/
+
+https://pressgallery.house.gov/member-data/demographics/african-americans
+https://pressgallery.house.gov/member-data/demographics/hispanic-americans
+
+Discrepancies (in pressgallery but not history -- added):
+Trent Franks R-AZ-8
+John Garamendi D-CA-3
+Brian Mast R-FL-18
+
+https://api.census.gov/data/2012/acs5?for=congressional+district:*&get=NAME,B05003_008E,B05003_019E,B05003B_008E,B05003B_019E,B05003I_008E,B05003I_019E
+https://api.census.gov/data/2014/acs5?for=congressional+district:*&get=NAME,B05003_008E,B05003_019E,B05003B_008E,B05003B_019E,B05003I_008E,B05003I_019E
+
+See also: http://www.pewresearch.org/fact-tank/2017/01/24/115th-congress-sets-new-high-for-racial-ethnic-diversity/
+
