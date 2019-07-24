@@ -1,0 +1,52 @@
+usps,fips,name,epsg,seats
+AK,2,Alaska,3467,1
+AL,1,Alabama,3465,7
+AR,5,Arkansas,3484,4
+AZ,4,Arizona,3478,9
+CA,6,California,3488,53
+CO,8,Colorado,3501,7
+CT,9,Connecticut,3507,5
+DC,11,District of Columbia,3559,1
+DE,10,Delaware,3509,1
+FL,12,Florida,3513,27
+GA,13,Georgia,3518,14
+HI,15,Hawaii,2782,2
+IA,19,Iowa,3536,4
+ID,16,Idaho,3522,2
+IL,17,Illinois,3528,18
+IN,18,Indiana,3532,9
+KS,20,Kansas,3540,4
+KY,21,Kentucky,3546,6
+LA,22,Louisiana,3552,6
+MA,25,Massachusetts,3585,9
+MD,24,Maryland,3559,8
+ME,23,Maine,3554,2
+MI,26,Michigan,3587,14
+MN,27,Minnesota,3594,8
+MO,29,Missouri,3601,8
+MS,28,Mississippi,3597,4
+MT,30,Montana,3604,1
+NC,37,North Carolina,3631,13
+ND,38,North Dakota,3635,1
+NE,31,Nebraska,3606,3
+NH,33,New Hampshire,3613,2
+NJ,34,New Jersey,3615,12
+NM,35,New Mexico,3617,3
+NV,32,Nevada,3607,4
+NY,36,New York,3623,27
+OH,39,Ohio,3637,16
+OK,40,Oklahoma,3639,5
+OR,41,Oregon,3643,5
+PA,42,Pennsylvania,3364,18
+RI,44,Rhode Island,3653,2
+SC,45,South Carolina,3655,7
+SD,46,South Dakota,3659,1
+TN,47,Tennessee,3661,9
+TX,48,Texas,3665,36
+UT,49,Utah,3675,4
+VA,51,Virginia,3687,11
+VT,50,Vermont,3684,1
+WA,53,Washington,3689,10
+WI,55,Wisconsin,3695,8
+WV,54,West Virginia,3694,3
+WY,56,Wyoming,3703,1
