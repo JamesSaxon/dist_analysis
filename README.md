@@ -253,7 +253,7 @@ The code simply plots the state colorfully,
 ### Appendix: The Least Compact Districts 
 * Code: [`cd_printer.py`](cd_printer.py)
 * Run time: 5.1s real / 4.9s user
-* Outputs: written to `paper_figs/bad_districts/`, of the form `[usps]_[cd].pdf`, e.g., `fl_5.pdf` for Florida's 5th congressional district.
+* Outputs: Figure I.1 written to `paper_figs/bad_districts/`, of the form `[usps]_[cd].pdf`, e.g., `fl_5.pdf` for Florida's 5th congressional district.
 
 This is just a convenience script to plot
   a clean pdf of any US Congressional District.
@@ -277,6 +277,8 @@ This creates violin plots of Black fraction,
 ### Appendix: County Splits
 
 * Code: [`app_county_splits.ipynb`](app_county_splits.ipynb)
+* Run time: approx 40 minutes.  As noted, this is by far the most awkward to replicate, and it is only tangential to the argument...
+* Output: Table E: `tex/splits_table.tex` and corresponding mini histograms, written to `splits/*pdf`.
 
 The question here is whether the compactness-based simulation
   "endangers" other districting principles.
@@ -289,13 +291,18 @@ This is corrected for the fact that some counties
 The evaluated quantity is thus pop(CD ∩ county) / min(pop(CD), pop(county)).
 
 I prepared this table in reponse to a reviewer's question,
-  and it is the one table where I did not preconsider the ease of replicability.
+  and it is the one table where I did not preconsider the ease of replication.
 I have therefore copied a lot of data to allow this one to be calculated from the dataverse files.
 Sorry that it is somewhat slow and memory intensive.
 
 ### Appendix: PCA of Historic Seats
 
 * Code: [`app_historic_interp_corr.ipynb`](app_historic_interp_corr.ipynb)
+* Run time: 6.7s real / 7.5s user
+* Output: Figure I.2: 
+  * Pearson: `paper_figs/historic_correlation.pdf`
+  * Spearman: `paper_figs/historic_spearmans.pdf`
+
 
 This appendix considers a PCA of districts
   from multimember states over the past three districting cycles (107th, 11th, and 114th Congresses).
