@@ -29,7 +29,7 @@ There are four components to the C4 Analysis.  These are divided between two rep
 ## Required Software
 
 The analysis scripts use the following standard python libraries,
-which can be installed most-easily through Anaconda.
+which can be installed most-easily through Anaconda, and I recommend this course strongly.
 I note the versions on my own machine.
 * **python (3.5.6)**
 * jupyter (4.2.3)       - jupyter notebooks -- self-commenting python code.
@@ -45,7 +45,18 @@ I note the versions on my own machine.
 * pysal (1.14.4)        - to generate contiguity matrix (c4 only)
 * cython (0.28.5)       - wrapping c++ to python (c4 only)
 
-Note that most of these scripts are implemented as python notebooks.
+In a recent check on Sept 17, 2019 for the Political Analysis replication, I was able to make an appropriate environment 
+  with simply:
+
+```
+conda create --yes --channel conda-forge --name PAenv \
+      matplotlib seaborn geopandas pandas numpy scipy \
+      scikit-learn jellyfish psycopg2 jupyter
+```
+
+Because this does not freeze versions, this will not necessarily remain valid permanently.
+
+Most of these scripts are implemented as python notebooks.
 This allows intermediate outputs are comments to be displayed inline.
 Jupyter is a standard python package, included with Anaconda installs.
 It can be launched on a remote machine, and code can be examined
