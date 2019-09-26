@@ -55,6 +55,13 @@ conda create --yes --channel conda-forge --name PAenv \
 ```
 
 Because this does not freeze versions, this will not necessarily remain valid permanently.
+GDAL's linking is notoriousy unstable in Anaconda, so the following may be more reliable:
+
+```
+conda env create --name pa_rep -f pa_rep.yaml
+```
+
+where `pa_rep.yaml` is the file included in the base of this directory.
 
 Most of these scripts are implemented as python notebooks.
 This allows intermediate outputs are comments to be displayed inline.
