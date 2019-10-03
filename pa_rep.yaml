@@ -26,4 +26,6 @@ dependencies:
   - six=1.12.0
   - statsmodels=0.10.1
   - tqdm=4.36.1
+  - xlrd
+  - descartes
 
