@@ -41,6 +41,8 @@ I note the versions on my own machine.
 * statsmodels (0.9.0)   - probit model for race
 * scipy (1.1.0)         - general statistics
 * scikit-learn (0.18.1) - PCA of historic districts, in appendix.
+* xlrd                  - loading excel, for minority seats
+* descartes             - for plotting polygons from geopandas
 * pyproj (1.9.5.1)      - map projecting (c4 only)
 * pysal (1.14.4)        - to generate contiguity matrix (c4 only)
 * cython (0.28.5)       - wrapping c++ to python (c4 only)
