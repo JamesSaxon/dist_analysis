@@ -273,12 +273,13 @@ The code simply plots the state colorfully,
 ### Appendix: The Least Compact Districts 
 * Code: [`cd_printer.py`](cd_printer.py)
 * Run time: 5.1s real / 4.9s user
+* <font color=red>**Not for replication**</font>: this script is dependent on a private database.  It will not run, but it is simply a convenience script, to print a clean PDF of any US Congressional district.
 * Outputs: Figure I.1 written to `paper_figs/bad_districts/`, of the form `[usps]_[cd].pdf`, e.g., `fl_5.pdf` for Florida's 5th congressional district.
 
-This is just a convenience script to plot
+This is a convenience script to plot
   a clean pdf of any US Congressional District.
-These can be looked up literally anywhere.
-There is not really any "replication" to do.
+These can be looked up with the Census, on Wikipedia, or on any number of Congressional widgets.
+There is no "replication" to do.
 
 The choice of districts is based on the PCA described below.
 
