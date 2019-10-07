@@ -41,6 +41,8 @@ I note the versions on my own machine.
 * statsmodels (0.9.0)   - probit model for race
 * scipy (1.1.0)         - general statistics
 * scikit-learn (0.18.1) - PCA of historic districts, in appendix.
+* xlrd                  - loading excel, for minority seats
+* descartes             - for plotting polygons from geopandas
 * pyproj (1.9.5.1)      - map projecting (c4 only)
 * pysal (1.14.4)        - to generate contiguity matrix (c4 only)
 * cython (0.28.5)       - wrapping c++ to python (c4 only)
@@ -271,12 +273,13 @@ The code simply plots the state colorfully,
 ### Appendix: The Least Compact Districts 
 * Code: [`cd_printer.py`](cd_printer.py)
 * Run time: 5.1s real / 4.9s user
+* **Not for replication**: this script is dependent on a private database.  It will not run, but it is simply a convenience script, to print a clean PDF of any US Congressional district.
 * Outputs: Figure I.1 written to `paper_figs/bad_districts/`, of the form `[usps]_[cd].pdf`, e.g., `fl_5.pdf` for Florida's 5th congressional district.
 
-This is just a convenience script to plot
+This is a convenience script to plot
   a clean pdf of any US Congressional District.
-These can be looked up literally anywhere.
-There is not really any "replication" to do.
+These can be looked up with the Census, on Wikipedia, or on any number of Congressional widgets.
+There is no "replication" to do.
 
 The choice of districts is based on the PCA described below.
 
