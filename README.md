@@ -28,9 +28,35 @@ There are four components to the C4 Analysis.  These are divided between two rep
 
 ## Required Software
 
-The analysis scripts use the following standard python libraries,
-which can be installed most-easily through Anaconda, and I recommend this course strongly.
-I note the versions on my own machine.
+The analysis scripts depend "standard" python libraries.
+These can be installed most-easily through Anaconda.  
+I recommend this course strongly.
+
+Among the required libraries is geopandas, which in turn relies on GDAL.
+Even with Anaconda, GDAL's linking is notoriousy unstable.
+To freeze versions, I have specified a [yaml file](pa_rep.yaml) for installing the environment.
+This was the one used for replication.
+Installation is then simply:
+
+```
+conda env create --name pa_rep -f pa_rep.yaml
+```
+
+The `pa_rep.yaml` file is included in the base of this directory.
+To use this environment, one would then do 
+
+```
+source activate pa_rep
+```
+
+and then start a jupyter server with 
+
+```
+jupyter-notebook
+```
+
+The original versions, used on my machine for the analysis were:
+
 * **python (3.5.6)**
 * jupyter (4.2.3)       - jupyter notebooks -- self-commenting python code.
 * matplotlib (2.2.2)    - general plotting
@@ -46,24 +72,6 @@ I note the versions on my own machine.
 * pyproj (1.9.5.1)      - map projecting (c4 only)
 * pysal (1.14.4)        - to generate contiguity matrix (c4 only)
 * cython (0.28.5)       - wrapping c++ to python (c4 only)
-
-In a recent check on Sept 17, 2019 for the Political Analysis replication, I was able to make an appropriate environment 
-  with simply:
-
-```
-conda create --yes --channel conda-forge --name PAenv \
-      matplotlib seaborn geopandas pandas numpy scipy \
-      scikit-learn jellyfish psycopg2 jupyter
-```
-
-Because this does not freeze versions, this will not necessarily remain valid permanently.
-GDAL's linking is notoriousy unstable in Anaconda, so the following may be more reliable:
-
-```
-conda env create --name pa_rep -f pa_rep.yaml
-```
-
-where `pa_rep.yaml` is the file included in the base of this directory.
 
 Most of these scripts are implemented as python notebooks.
 This allows intermediate outputs are comments to be displayed inline.
