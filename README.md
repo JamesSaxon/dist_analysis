@@ -209,7 +209,7 @@ So if necessary, I could split up states and get this onto the dataverse.
     * Table 2 -- seat shares for Pennsylvania -- is `tex/PA_table.tex`.  
     * Appendix Tables A.1-A.9 -- seat shares for the other states -- are named analogously.  
       * N.B. that a file is also generated for Virginia.
-        These data were not ready when I initially submitted, and so they are not included in the manuscript.
+        Virginia data were not ready when I initially submitted, and so they are not included in the manuscript.
         You are welcome to examine them -- Virginia behaves like any other state.
     * Appendix D -- Texas senate table is `TX_senate_table.tex`.
     * Appendix F -- NC race table is `NC_race.tex`.
